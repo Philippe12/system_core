@@ -161,3 +161,103 @@ fail_restore_text:
     return -1;
 }
 
+int load_argb8888_image(char *fn)
+{
+    struct FB fb;
+    struct stat s;
+    unsigned long *data, *bits, *ptr;
+    unsigned long *lineptr;
+    unsigned long width;
+    unsigned long height;
+    unsigned long countw = 0;
+    unsigned long counth = 0;
+    unsigned long *linebits;
+    unsigned long fbsize;
+    int fd;
+
+    if (vt_set_mode(1)) 
+        return -1;
+
+    fd = open(fn, O_RDONLY);
+    if (fd < 0) {
+        ERROR("cannot open '%s'\n", fn);
+        goto fail_restore_text;
+    }
+
+    if (fstat(fd, &s) < 0) 
+    {
+        ERROR("fstat failed!\n");
+        goto fail_close_file;
+    }
+
+    data = mmap(0, s.st_size, PROT_READ, MAP_SHARED, fd, 0);
+    if (data == MAP_FAILED)
+    {
+        ERROR("MMAP failed!\n");
+        goto fail_close_file;
+    }
+
+    if (fb_open(&fb))
+    {
+        ERROR("FB_OPEN failed!\n");
+        goto fail_unmap_data;
+    }
+
+    width       = fb_width(&fb);
+    height      = fb_height(&fb);
+
+    fbsize      = width * height * 4;
+    ERROR("width = %lu\n",width);
+	ERROR("height = %lu\n",height);
+	ERROR("s.st_size = %lld\n",s.st_size);
+	ERROR( "PFO %d", __LINE__);
+    
+    if(fbsize != s.st_size)
+    {
+        ERROR("logo match failed!fbsize = %lu\n",fbsize);
+
+        munmap(data, s.st_size);
+        fb_update(&fb);
+        fb_close(&fb);
+        close(fd);
+
+        return -1;
+    }
+    
+    counth      = height;
+    linebits    = (unsigned long*)fb.bits;
+    lineptr     = data;
+
+    while (counth > 0) 
+    {
+        bits    = linebits;
+        ptr     = lineptr;
+        countw  = width;
+        while(countw > 0)
+        {
+            *bits = *ptr;
+            ptr++;
+            bits++;
+            countw--;
+        }
+        linebits    += width;
+        lineptr     += width;
+        counth--;
+    }
+
+    munmap(data, s.st_size);
+    fb_update(&fb);
+    fb_close(&fb);
+    close(fd);
+    //unlink(fn);
+    return 0;
+
+fail_unmap_data:
+    munmap(data, s.st_size);    
+fail_close_file:
+    close(fd);
+fail_restore_text:
+    vt_set_mode(0);
+    return -1;
+}
+

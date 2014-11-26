@@ -135,6 +135,7 @@ void property_changed(const char *name, const char *value);
 #define INIT_IMAGE_FILE	"/initlogo.rle"
 
 int load_565rle_image( char *file_name );
+int load_argb8888_image(char *fn);
 
 extern struct selabel_handle *sehandle;
 extern struct selabel_handle *sehandle_prop;

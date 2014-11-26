@@ -657,7 +657,8 @@ static int console_init_action(int nargs, char **args)
         have_console = 1;
     close(fd);
 
-    if( load_565rle_image(INIT_IMAGE_FILE) ) {
+    //if( load_565rle_image(INIT_IMAGE_FILE) ) {
+    if( load_argb8888_image(INIT_IMAGE_FILE) ) {
         fd = open("/dev/tty0", O_WRONLY);
         if (fd >= 0) {
             const char *msg;
@@ -680,6 +681,7 @@ static int console_init_action(int nargs, char **args)
             close(fd);
         }
     }
+
     return 0;
 }
 
@@ -716,6 +718,44 @@ static void import_kernel_nv(char *name, int for_emulator)
     }
 }
 
+static int get_chip_id(char *buf, size_t size)
+{
+    char *path = "/proc/cpuinfo";
+    FILE *fd;
+    char data[128];
+    char *key, *value, *end;
+    int len = -1;
+
+    fd = fopen(path, "r");
+    if (fd == NULL) {
+        ERROR("cannot open %s\n", path);
+        goto oops;
+    }
+
+    while (fgets(data, sizeof(data), fd)) {
+        key = data;
+        value = strchr(key, ':');
+        if (value == 0)
+            continue;
+        *value++ = 0;
+
+        if (strncmp(key, "Serial", 6))
+            continue;
+
+        while (isspace(*value))
+            value++;
+
+        end = strchr(value, '\n');
+        *end = 0;
+        len = snprintf(buf, size, "%s", value);
+        break;
+    }
+
+    fclose(fd);
+oops:
+    return len;
+}
+
 static void export_kernel_boot_props(void)
 {
     char tmp[PROP_VALUE_MAX];
@@ -731,6 +771,13 @@ static void export_kernel_boot_props(void)
         { "ro.boot.baseband", "ro.baseband", "unknown", },
         { "ro.boot.bootloader", "ro.bootloader", "unknown", },
     };
+    char buf[32] = {0};
+
+    if (get_chip_id(buf, sizeof(buf)) < 0) {
+        ERROR("get chip id failed\n");
+    } else {
+        property_set("ro.boot.serialno", buf);
+    }
 
     for (i = 0; i < ARRAY_SIZE(prop_map); i++) {
         ret = property_get(prop_map[i].src_prop, tmp);
