@@ -99,6 +99,8 @@ static int lookup_keyword(const char *s)
         if (!strcmp(s, "xec")) return K_exec;
         if (!strcmp(s, "xport")) return K_export;
         break;
+    case 'f':
+    	if(!strcmp(s, "ormat_userdata")) return K_format_userdata;
     case 'g':
         if (!strcmp(s, "roup")) return K_group;
         break;
@@ -154,6 +156,7 @@ static int lookup_keyword(const char *s)
         if (!strcmp(s, "wapon_all")) return K_swapon_all;
         if (!strcmp(s, "ymlink")) return K_symlink;
         if (!strcmp(s, "ysclktz")) return K_sysclktz;
+        if (!strcmp(s, "etupfs")) return K_setupfs;
         break;
     case 't':
         if (!strcmp(s, "rigger")) return K_trigger;
@@ -164,6 +167,7 @@ static int lookup_keyword(const char *s)
     case 'w':
         if (!strcmp(s, "rite")) return K_write;
         if (!strcmp(s, "ait")) return K_wait;
+        if (!strcmp(s, "mount")) return K_umount;
         break;
     }
     return K_UNKNOWN;

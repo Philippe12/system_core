@@ -30,6 +30,14 @@
 #include <linux/ion.h>
 #include <ion/ion.h>
 
+#define ION_IOC_SUNXI_PHYS_ADDR             7
+
+typedef struct {
+        void *handle;
+        unsigned int phys_addr;
+        unsigned int size;
+}sunxi_phys_data;
+
 int ion_open()
 {
     int fd = open("/dev/ion", O_RDWR);
@@ -173,4 +181,21 @@ int ion_sync_fd(int fd, int handle_fd)
         .fd = handle_fd,
     };
     return ion_ioctl(fd, ION_IOC_SYNC, &data);
+}
+
+int ion_getphyadr(int fd,void *handle_fd)
+{
+	int ret = 0;
+	struct ion_custom_data custom_data;
+	sunxi_phys_data phys_data;
+    
+    custom_data.cmd = ION_IOC_SUNXI_PHYS_ADDR;
+	phys_data.handle = handle_fd;
+	custom_data.arg = (unsigned long)&phys_data;
+	ret = ioctl(fd, ION_IOC_CUSTOM, &custom_data);
+	
+	if(ret < 0)
+		return 0;
+    
+    return phys_data.phys_addr;
 }
