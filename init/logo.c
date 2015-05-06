@@ -49,7 +49,7 @@ struct FB {
 
 #define fb_width(fb) ((fb)->vi.xres)
 #define fb_height(fb) ((fb)->vi.yres)
-#define fb_size(fb) ((fb)->vi.xres * (fb)->vi.yres * 2)
+#define fb_size(fb) ((fb)->vi.xres * (fb)->vi.yres * 4)
 
 static int fb_open(struct FB *fb)
 {
