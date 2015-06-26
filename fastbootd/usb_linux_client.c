@@ -333,6 +333,41 @@ struct transport_handle *usb_connect(struct transport *transport)
     return &usb_handle->handle;
 }
 
+int usb_isready( struct transport_handle *thandle )
+{
+	struct usb_functionfs_event event;
+	struct transport *t = thandle->transport;
+    struct usb_transport *usb_transport = container_of(t, struct usb_transport, transport);
+	int ret = 0;
+
+		ret = read(usb_transport->control, &event, sizeof(event));
+		if (!ret) {
+			perror("unable to read event from ep0");
+			return 0;
+		}
+		//display_event(&event);
+		switch (event.type) {
+		case FUNCTIONFS_SETUP:
+			if (event.u.setup.bRequestType & USB_DIR_IN)
+				write(usb_transport->control, NULL, 0);
+			else
+				read(usb_transport->control, NULL, 0);
+			break;
+
+		case FUNCTIONFS_ENABLE:
+			ret = 1;
+			break;
+
+		case FUNCTIONFS_DISABLE:
+			ret = 0;
+			break;
+
+		default:
+			break;
+		}
+	return ret;
+}
+
 void usb_init()
 {
     struct usb_transport *usb_transport = calloc(1, sizeof(struct usb_transport));
@@ -341,9 +376,10 @@ void usb_init()
     usb_transport->transport.close = usb_close;
     usb_transport->transport.read = usb_read;
     usb_transport->transport.write = usb_write;
+    usb_transport->transport.isready = usb_isready;
     usb_transport->control  = -1;
     usb_transport->bulk_out = -1;
-    usb_transport->bulk_out = -1;
+    usb_transport->bulk_in = -1;
 
     pthread_cond_init(&usb_transport->notify, NULL);
     pthread_mutex_init(&usb_transport->lock, NULL);

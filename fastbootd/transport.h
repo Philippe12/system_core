@@ -30,6 +30,7 @@ struct transport {
     void (*close)(struct transport_handle *thandle);
     ssize_t (*read)(struct transport_handle *thandle, void *data, size_t len);
     ssize_t (*write)(struct transport_handle *thandle, const void *data, size_t len);
+    int (*isready)(struct transport_handle *thandle);
     struct transport_handle *(*connect)(struct transport *transport);
     bool stopped;
 };

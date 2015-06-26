@@ -25,7 +25,8 @@ LOCAL_SRC_FILES := \
     usb_linux_client.c
 
 LOCAL_MODULE := fastbootd
-LOCAL_MODULE_TAGS := optional
+LOCAL_MODULE_TAGS := eng
+#optional
 LOCAL_CFLAGS := -Wall -Werror -Wno-unused-parameter
 
 LOCAL_STATIC_LIBRARIES := \

@@ -87,6 +87,8 @@ static void *transport_data_thread(void *arg)
     struct transport_handle *thandle = arg;
     struct protocol_handle *phandle = create_protocol_handle(thandle);
 
+	while( thandle->transport->isready(thandle) );
+
     while (!thandle->stopped) {
         int ret;
         char buffer[COMMAND_BUF_SIZE + 1];
