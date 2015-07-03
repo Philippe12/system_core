@@ -200,7 +200,7 @@ void commands_init()
     fastboot_register("continue", cmd_continue);
     fastboot_register("getvar:", cmd_getvar);
     fastboot_register("download:", cmd_download);
-    //fastboot_publish("version", "0.5");
-    //fastboot_publish("product", "swordfish");
-    //fastboot_publish("kernel", "lk");
+    fastboot_publish("version", "0.5");
+    fastboot_publish("product", "swordfish");
+    fastboot_publish("kernel", "lk");
 }
