@@ -32,19 +32,21 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <fcntl.h>
 #include <sys/ioctl.h>
 #include <linux/fs.h>
+#include <mtd/mtd-user.h>
 
 #include "utils.h"
 #include "debug.h"
 
-#ifndef BLKDISCARD
-#define BLKDISCARD _IO(0x12,119)
-#endif
+//#ifndef BLKDISCARD
+//#define BLKDISCARD _IO(0x12,119)
+//#endif
 
-#ifndef BLKSECDISCARD
-#define BLKSECDISCARD _IO(0x12,125)
-#endif
+//#ifndef BLKSECDISCARD
+//#define BLKSECDISCARD _IO(0x12,125)
+//#endif
 
 
 int get_stream_size(FILE *stream) {
@@ -123,6 +125,34 @@ char *strip(char *str)
 
 int wipe_block_device(int fd, int64_t len)
 {
+    int ret;
+	erase_info_t erase;
+	mtd_info_t mtd_info;           // the MTD structure
+	
+	ret = ioctl(fd, MEMGETINFO, &mtd_info);   // get the device info
+	if( ret < 0 ) {
+		D(WARN, "Can't get flash info");
+		return 1;
+	}
+	
+	erase.length = mtd_info.erasesize;   //set the erase block size
+    for(erase.start = 0; erase.start < mtd_info.size; erase.start += erase.length)
+    {
+		loff_t offs;
+        ret = ioctl(fd, MEMUNLOCK, &erase);
+
+		offs = erase.start;
+		if( ioctl(fd, MEMGETBADBLOCK, &offs) == 1 ) {
+			D(WARN, "Bad block flash at 0x%X", erase.start);
+			continue;
+		}
+        ret = ioctl(fd, MEMERASE, &erase);
+		if( ret < 0 ) {
+			D(WARN, "Can't erase flash at 0x%X", erase.start);
+			return 1;
+		}
+    }    
+#if 0
     uint64_t range[2];
     int ret;
 
@@ -141,7 +171,7 @@ int wipe_block_device(int fd, int64_t len)
             return 0;
         }
     }
-
+#endif
     return 0;
 }
 

@@ -32,6 +32,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/mman.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <mtd/mtd-user.h>
 
 #include "flash.h"
 #include "protocol.h"
@@ -86,6 +89,42 @@ int flash_erase(int fd)
 
 int flash_write(int partition_fd, int data_fd, ssize_t size, ssize_t skip)
 {
+    int ret, id = 0;
+	mtd_info_t mtd_info;           // the MTD structure
+	unsigned writesize;
+	
+	ret = ioctl(partition_fd, MEMGETINFO, &mtd_info);   // get the device info
+	if( ret < 0 ) {
+		D(WARN, "Can't get flash info");
+		return 1;
+	}
+	
+	writesize = mtd_info.writesize;
+	//lseek(fd, skip, SEEK_SET);
+    while(1)
+    {
+		//loff_t offs;
+		size_t readsize;
+		char buff[writesize];
+		memset(buff, 0, writesize);
+		
+		readsize = read(data_fd, buff, writesize);
+
+		//if( ioctl(fd, MEMGETBADBLOCK, &offs) == 1 ) {
+		//	D(WARN, "Bad block flash at 0x%X", erase.start);
+		//	continue;
+		//}
+        ret = write(partition_fd, buff, writesize);
+		if( ret < 0 ) {
+			D(WARN, "Can't write flash (%d)", id);
+			return 1;
+		}
+		id++;
+		if( readsize != writesize)
+			break;
+    }    
+	
+#if 0
     ssize_t written = 0;
     struct GPT_mapping input;
     struct GPT_mapping output;
@@ -109,6 +148,6 @@ int flash_write(int partition_fd, int data_fd, ssize_t size, ssize_t skip)
 
         written += current_size;
     }
-
+#endif
     return 0;
 }

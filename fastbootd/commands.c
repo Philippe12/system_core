@@ -288,12 +288,12 @@ static void cmd_flash(struct protocol_handle *phandle, const char *arg)
     partition = flash_get_partiton(path);
 
     sz = get_file_size64(phandle->download_fd);
-    if (sz > get_file_size64(partition)) {
+ /*   if (sz > get_file_size64(partition)) {
+        D(WARN, "size of file too large %lld > %lld", sz, get_file_size64(partition));
         flash_close(partition);
-        D(WARN, "size of file too large");
         fastboot_fail(phandle, "size of file too large");
         return;
-    }
+    }*/
 
     D(INFO, "writing %lld bytes to '%s'\n", sz, arg);
 
@@ -380,4 +380,5 @@ void commands_init()
     fastboot_publish("version", "0.5");
     fastboot_publish("product", "swordfish");
     fastboot_publish("kernel", "lk");
+    fastboot_publish("device-directory", "/dev/");
 }

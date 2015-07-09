@@ -39,7 +39,7 @@ LOCAL_MODULE := fastbootd
 LOCAL_MODULE_TAGS := eng
 #optional
 LOCAL_CFLAGS := -Wall -Werror -Wno-unused-parameter
-LOCAL_LDFLAGS := -ldl
+#LOCAL_LDFLAGS := -ldl
 
 LOCAL_SHARED_LIBRARIES := \
     libhardware \
@@ -51,7 +51,7 @@ LOCAL_STATIC_LIBRARIES := \
     libcutils \
     libz
 
-#LOCAL_FORCE_STATIC_EXECUTABLE := true
+LOCAL_FORCE_STATIC_EXECUTABLE := true
 
 include $(BUILD_EXECUTABLE)
 

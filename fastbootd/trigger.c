@@ -42,6 +42,7 @@ static const int version = 1;
 static struct vendor_trigger_t *triggers = NULL;
 
 int load_trigger() {
+#if 0
     int err;
     hw_module_t* module;
     hw_device_t* device;
@@ -72,7 +73,7 @@ int load_trigger() {
         return 1;
     }
     D(INFO, "libvendortrigger loaded");
-
+#endif
     return 0;
 }
 
