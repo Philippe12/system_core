@@ -123,31 +123,5 @@ int flash_write(int partition_fd, int data_fd, ssize_t size, ssize_t skip)
 		if( readsize != writesize)
 			break;
     }    
-	
-#if 0
-    ssize_t written = 0;
-    struct GPT_mapping input;
-    struct GPT_mapping output;
-
-    while (written < size) {
-        int current_size = MIN(size - written, BUFFER_SIZE);
-
-        if (gpt_mmap(&input, written + skip, current_size, data_fd)) {
-            D(ERR, "Error in writing data, unable to map data file %d at %d size %d", size, skip, current_size);
-            return -1;
-        }
-        if (gpt_mmap(&output, written, current_size, partition_fd)) {
-            D(ERR, "Error in writing data, unable to map output partition");
-            return -1;
-        }
-
-        memcpy(output.ptr, input.ptr, current_size);
-
-        gpt_unmap(&input);
-        gpt_unmap(&output);
-
-        written += current_size;
-    }
-#endif
     return 0;
 }

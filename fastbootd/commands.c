@@ -29,6 +29,7 @@
  * SUCH DAMAGE.
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -253,7 +254,6 @@ static void cmd_flash(struct protocol_handle *phandle, const char *arg)
 {
     int partition;
     uint64_t sz;
-    char data[BOOT_MAGIC_SIZE];
     char path[PATH_MAX];
     ssize_t header_sz = 0;
 
@@ -273,38 +273,35 @@ static void cmd_flash(struct protocol_handle *phandle, const char *arg)
         return;
     }
 
+	partition = flash_get_partiton(path);
+
+	sz = get_file_size64(phandle->download_fd);
+ 
+	D(INFO, "writing %lld bytes to '%s'\n", sz, arg);
+	if (flash_write(partition, phandle->download_fd, sz, header_sz)) {
+		fastboot_fail(phandle, "flash write failure");
+		return;
+	}
+	D(INFO, "partition '%s' updated\n", arg);
+
+	flash_close(partition);
+    
     // TODO: Maybe its goot idea to check whether the partition is just bootable partition
-    if (!strcmp(arg, "boot") || !strcmp(arg, "recovery")) {
-        if (read_data_once(phandle->download_fd, data, BOOT_MAGIC_SIZE) < BOOT_MAGIC_SIZE) {
-            fastboot_fail(phandle, "incoming data read error, cannot read boot header");
-            return;
-        }
-        if (memcmp((void *)data, BOOT_MAGIC, BOOT_MAGIC_SIZE)) {
-            fastboot_fail(phandle, "image is not a boot image");
-            return;
-        }
-    }
-
-    partition = flash_get_partiton(path);
-
-    sz = get_file_size64(phandle->download_fd);
- /*   if (sz > get_file_size64(partition)) {
-        D(WARN, "size of file too large %lld > %lld", sz, get_file_size64(partition));
-        flash_close(partition);
-        fastboot_fail(phandle, "size of file too large");
-        return;
-    }*/
-
-    D(INFO, "writing %lld bytes to '%s'\n", sz, arg);
-
-    if (flash_write(partition, phandle->download_fd, sz, header_sz)) {
-        fastboot_fail(phandle, "flash write failure");
-        return;
-    }
-    D(INFO, "partition '%s' updated\n", arg);
-
-    flash_close(partition);
-
+    if (strcmp(arg, "mtd0") && strcmp(arg, "mtd1")) {
+		int mtd;
+		char cmd[1024];
+		D(INFO, "mounting part : %s\n", arg);
+		sscanf(arg, "mtd%d", &mtd);
+		sprintf(cmd, "/sbin/ubiattach /dev/ubi_ctrl -m %d", mtd );
+		system( cmd );
+		D(INFO, "cmd : %s\n", cmd);
+		system( "/bin/mkdir /mntubi" );
+		system( "/bin/mount -t ubifs /dev/ubi0_0 /mntubi" );
+		system( "/bin/umount /mntubi" );
+		system( "/sbin/ubidetach /dev/ubi_ctrl -d 0" );
+		system( "/bin/rm -rf /mntubi" );
+	}
+	
     fastboot_okay(phandle, "");
 }
 
@@ -333,7 +330,7 @@ static void cmd_download(struct protocol_handle *phandle, const char *arg)
     unsigned len = strtoul(arg, NULL, 16);
     int old_fd;
 
-    if (len > 256 * 1024 * 1024) {
+    if (len > 3 * 256 * 1024 * 1024) {
         fastboot_fail(phandle, "data too large");
         return;
     }
