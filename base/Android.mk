@@ -50,7 +50,6 @@ libbase_test_windows_src_files := \
 libbase_cppflags := \
     -Wall \
     -Wextra \
-    -Werror \
 
 libbase_linux_cppflags := \
     -Wexit-time-destructors \
