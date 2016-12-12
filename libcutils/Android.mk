@@ -69,7 +69,7 @@ LOCAL_SRC_FILES_darwin := $(libcutils_nonwindows_sources) $(libcutils_nonwindows
 LOCAL_SRC_FILES_linux := $(libcutils_nonwindows_sources) $(libcutils_nonwindows_host_sources)
 LOCAL_SRC_FILES_windows := $(libcutils_windows_host_sources)
 LOCAL_STATIC_LIBRARIES := liblog
-LOCAL_CFLAGS := -Wall -Wextra
+LOCAL_CFLAGS := -Werror -Wall -Wextra
 LOCAL_MULTILIB := both
 LOCAL_MODULE_HOST_OS := darwin linux windows
 include $(BUILD_HOST_STATIC_LIBRARY)
@@ -80,7 +80,7 @@ LOCAL_SRC_FILES := $(libcutils_common_sources) dlmalloc_stubs.c
 LOCAL_SRC_FILES_darwin := $(libcutils_nonwindows_sources) $(libcutils_nonwindows_host_sources)
 LOCAL_SRC_FILES_linux := $(libcutils_nonwindows_sources) $(libcutils_nonwindows_host_sources)
 LOCAL_SHARED_LIBRARIES := liblog
-LOCAL_CFLAGS := -Wall -Wextra
+LOCAL_CFLAGS := -Werror -Wall -Wextra
 LOCAL_MULTILIB := both
 include $(BUILD_HOST_SHARED_LIBRARY)
 
@@ -125,7 +125,7 @@ endif
 ifneq ($(ENABLE_SCHEDBOOST),)
 LOCAL_CFLAGS += -DUSE_SCHEDBOOST
 endif
-LOCAL_CFLAGS += -Wall -Wextra -std=gnu90
+LOCAL_CFLAGS += -Werror -Wall -Wextra -std=gnu90
 LOCAL_CLANG := true
 LOCAL_SANITIZE := integer
 include $(BUILD_STATIC_LIBRARY)
@@ -142,7 +142,7 @@ endif
 ifneq ($(ENABLE_SCHEDBOOST),)
 LOCAL_CFLAGS += -DUSE_SCHEDBOOST
 endif
-LOCAL_CFLAGS += -Wall -Wextra
+LOCAL_CFLAGS += -Werror -Wall -Wextra
 LOCAL_C_INCLUDES := $(libcutils_c_includes)
 LOCAL_CLANG := true
 LOCAL_SANITIZE := integer
